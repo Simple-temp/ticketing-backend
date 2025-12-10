@@ -41,22 +41,30 @@ router.put("/:id/update", auth, async (req, res) => {
     const ticket = await Ticket.findById(req.params.id);
     if (!ticket) return res.status(404).json({ message: "Ticket not found" });
 
-    const now = new Date();
-    const bdDate = new Date(now.getTime() + 6 * 60 * 60 * 1000); // Bangladesh time
-    const solvedDate = `${bdDate.getDate()}-${["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][bdDate.getMonth()]}`;
-    const solvedTime = now.toTimeString().slice(0,5);
+    // --- Accurate Bangladesh Date & Time ---
+    const nowBD = new Date(
+      new Date().toLocaleString("en-US", { timeZone: "Asia/Dhaka" })
+    );
 
+    // Make date like 21-Nov
+    const day = nowBD.getDate();
+    const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    const solvedDate = `${day}-${monthNames[nowBD.getMonth()]}`;
+
+    // Time (HH:MM)
+    const solvedTime = nowBD.toTimeString().slice(0, 5);
+
+    // Create remark object
     const remarkObj = {
       text,
       user: req.user.id,
-      timestamp: new Date(),
+      timestamp: nowBD,
       status: status || "Open",
     };
 
-    // Push new remark
     ticket.remarks.unshift(remarkObj);
 
-    // Update ticket fields based on status
+    // Update status fields
     if (status === "Closed") {
       ticket.closed = "Yes";
       ticket.pending = "";
@@ -65,7 +73,7 @@ router.put("/:id/update", auth, async (req, res) => {
     } else if (status === "Pending") {
       ticket.pending = "Pending";
       ticket.closed = "";
-    } else { // Open
+    } else {
       ticket.closed = "";
       ticket.pending = "";
     }
@@ -76,6 +84,7 @@ router.put("/:id/update", auth, async (req, res) => {
       .populate("remarks.user", "name");
 
     res.json(updatedTicket);
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: err.message });
