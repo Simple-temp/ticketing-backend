@@ -36,22 +36,19 @@ router.get("/my", auth, async (req, res) => {
 router.put("/:id/update", auth, async (req, res) => {
   try {
     const { text, status } = req.body;
-    if (!text) return res.status(400).json({ message: "Remark text is required" });
+    if (!text)
+      return res.status(400).json({ message: "Remark text is required" });
 
     const ticket = await Ticket.findById(req.params.id);
-    if (!ticket) return res.status(404).json({ message: "Ticket not found" });
+    if (!ticket)
+      return res.status(404).json({ message: "Ticket not found" });
 
     // --- Accurate Bangladesh Date & Time ---
     const nowBD = new Date(
       new Date().toLocaleString("en-US", { timeZone: "Asia/Dhaka" })
     );
 
-    // Make date like 21-Nov
-    const day = nowBD.getDate();
-    const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-    const solvedDate = `${day}-${monthNames[nowBD.getMonth()]}`;
-
-    // Time (HH:MM)
+    // Time (HH:MM) for UI
     const solvedTime = nowBD.toTimeString().slice(0, 5);
 
     // Create remark object
@@ -68,11 +65,15 @@ router.put("/:id/update", auth, async (req, res) => {
     if (status === "Closed") {
       ticket.closed = "Yes";
       ticket.pending = "";
-      ticket.solvedDate = solvedDate;
+
+      // ✅ FIX: save REAL DATE
+      ticket.solvedDate = nowBD;
       ticket.solvedTime = solvedTime;
+
     } else if (status === "Pending") {
       ticket.pending = "Pending";
       ticket.closed = "";
+
     } else {
       ticket.closed = "";
       ticket.pending = "";
@@ -84,12 +85,12 @@ router.put("/:id/update", auth, async (req, res) => {
       .populate("remarks.user", "name");
 
     res.json(updatedTicket);
-
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: err.message });
   }
 });
+
 
 
 // DELETE

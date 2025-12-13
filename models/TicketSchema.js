@@ -1,42 +1,54 @@
 const mongoose = require("mongoose");
 
-const TicketSchema = new mongoose.Schema({
-  Sn: Number,
-  clientType: String,
-  clientName: String,
-  issue: String,
+const TicketSchema = new mongoose.Schema(
+  {
+    Sn: Number,
+    clientType: String,
+    clientName: String,
+    issue: String,
 
-  complainDate: String,
-  complainTime: String,
-  solvedTime: String,
-  solvedDate: String,
-
-  sTime: String,
-  engName: String,
-  engNameAnother: String,
-
-  // change remarks to array of objects
-  remarks: [
-    {
-      text: String,          // the remark text
-      user: {                // who added it
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-      },
-      timestamp: {           // when added
-        type: Date,
-        default: Date.now,
-      },
+    // Complaint Date & Time
+    complainDate: {
+      type: Date,
+      default: Date.now, // current date when ticket is created
     },
-  ],
+    complainTime: String,
 
-  closed: String,
-  pending: String,
+    // Solved Date & Time
+    solvedDate: {
+      type: Date,
+    },
+    solvedTime: String,
 
-  createdBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
+    sTime: String,
+    engName: String,
+    engNameAnother: String,
+
+    remarks: [
+      {
+        text: String,
+        user: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
+        timestamp: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
+
+    closed: String,
+    pending: String,
+
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
   },
-});
+  {
+    timestamps: true, // 👈 adds createdAt & updatedAt automatically
+  }
+);
 
 module.exports = mongoose.model("Ticket", TicketSchema);
