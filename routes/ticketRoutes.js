@@ -18,6 +18,7 @@ router.post("/create", auth, async (req, res) => {
   res.json(ticket);
 });
 
+
 // GET all
 router.get("/all", async (req, res) => {
   const tickets = await Ticket.find();
@@ -43,37 +44,35 @@ router.put("/:id/update", auth, async (req, res) => {
     if (!ticket)
       return res.status(404).json({ message: "Ticket not found" });
 
-    // --- Accurate Bangladesh Date & Time ---
+    // --- Bangladesh Date & Time ---
     const nowBD = new Date(
       new Date().toLocaleString("en-US", { timeZone: "Asia/Dhaka" })
     );
 
-    // Time (HH:MM) for UI
     const solvedTime = nowBD.toTimeString().slice(0, 5);
 
-    // Create remark object
-    const remarkObj = {
+    // 🔹 Add remark
+    ticket.remarks.unshift({
       text,
       user: req.user.id,
       timestamp: nowBD,
       status: status || "Open",
-    };
+    });
 
-    ticket.remarks.unshift(remarkObj);
+    // 🔹 ADD engineer name EVERY TIME (duplicates allowed)
+    ticket.engNameAnother.push({
+      name: req.user.name,
+    });
 
-    // Update status fields
+    // 🔹 Status logic
     if (status === "Closed") {
       ticket.closed = "Yes";
       ticket.pending = "";
-
-      // ✅ FIX: save REAL DATE
       ticket.solvedDate = nowBD;
       ticket.solvedTime = solvedTime;
-
     } else if (status === "Pending") {
       ticket.pending = "Pending";
       ticket.closed = "";
-
     } else {
       ticket.closed = "";
       ticket.pending = "";
@@ -90,6 +89,7 @@ router.put("/:id/update", auth, async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+
 
 
 

@@ -22,7 +22,13 @@ const TicketSchema = new mongoose.Schema(
 
     sTime: String,
     engName: String,
-    engNameAnother: String,
+    engNameAnother: [
+      {
+        name: {
+          type: String
+        },
+      }
+    ],
 
     remarks: [
       {
@@ -31,10 +37,7 @@ const TicketSchema = new mongoose.Schema(
           type: mongoose.Schema.Types.ObjectId,
           ref: "User",
         },
-        timestamp: {
-          type: Date,
-          default: Date.now,
-        },
+        timestamp: { type: Date, default: Date.now, },
       },
     ],
 
