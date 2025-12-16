@@ -34,17 +34,75 @@ router.get("/my", auth, async (req, res) => {
 // Add remark to a ticket
 
 
+// router.put("/:id/update", auth, async (req, res) => {
+//   try {
+//     const { text, status } = req.body;
+//     if (!text)
+//       return res.status(400).json({ message: "Remark text is required" });
+
+//     const ticket = await Ticket.findById(req.params.id);
+//     if (!ticket)
+//       return res.status(404).json({ message: "Ticket not found" });
+
+//     // --- Bangladesh Date & Time ---
+//     const nowBD = new Date(
+//       new Date().toLocaleString("en-US", { timeZone: "Asia/Dhaka" })
+//     );
+
+//     const solvedTime = nowBD.toTimeString().slice(0, 5);
+
+//     // 🔹 Add remark
+//     ticket.remarks.unshift({
+//       text,
+//       user: req.user.id,
+//       timestamp: nowBD,
+//       status: status || "Open",
+//     });
+
+//     // 🔹 ADD engineer name EVERY TIME (duplicates allowed)
+//     ticket.engNameAnother.push({
+//       name: req.user.name,
+//     });
+
+//     // 🔹 Status logic
+//     if (status === "Closed") {
+//       ticket.closed = "Yes";
+//       ticket.pending = "";
+//       ticket.solvedDate = nowBD;
+//       ticket.solvedTime = solvedTime;
+//     } else if (status === "Pending") {
+//       ticket.pending = "Pending";
+//       ticket.closed = "";
+//     } else {
+//       ticket.closed = "";
+//       ticket.pending = "";
+//     }
+
+//     await ticket.save();
+
+//     const updatedTicket = await Ticket.findById(req.params.id)
+//       .populate("remarks.user", "name");
+
+//     res.json(updatedTicket);
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ message: err.message });
+//   }
+// });
+
 router.put("/:id/update", auth, async (req, res) => {
   try {
     const { text, status } = req.body;
-    if (!text)
+    if (!text) {
       return res.status(400).json({ message: "Remark text is required" });
+    }
 
     const ticket = await Ticket.findById(req.params.id);
-    if (!ticket)
+    if (!ticket) {
       return res.status(404).json({ message: "Ticket not found" });
+    }
 
-    // --- Bangladesh Date & Time ---
+    // 🇧🇩 Bangladesh Date & Time
     const nowBD = new Date(
       new Date().toLocaleString("en-US", { timeZone: "Asia/Dhaka" })
     );
@@ -56,15 +114,14 @@ router.put("/:id/update", auth, async (req, res) => {
       text,
       user: req.user.id,
       timestamp: nowBD,
-      status: status || "Open",
     });
 
-    // 🔹 ADD engineer name EVERY TIME (duplicates allowed)
+    // 🔹 UPDATE engNameAnother (ALLOW DUPLICATES)
     ticket.engNameAnother.push({
       name: req.user.name,
     });
 
-    // 🔹 Status logic
+    // 🔹 Status handling
     if (status === "Closed") {
       ticket.closed = "Yes";
       ticket.pending = "";
@@ -89,7 +146,6 @@ router.put("/:id/update", auth, async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
-
 
 
 
